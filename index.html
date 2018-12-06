@@ -7,8 +7,15 @@
     <script src="jquery-3.3.1.slim.min.js"></script>
     <script src="jquery.json-viewer.js"></script>
     <script src="simplequerystring.min.js"></script>
+    <script src="rison.js"></script>
     <style type="text/css">
-      body { padding: 1em 1.5em; }
+      body {
+        padding: 1rem 1.5rem;
+      }
+      .json-viewer {
+        font-family: monospace;
+        margin: 1.5rem 0 0 .5rem;
+      }
     </style>
   </head>
   <body>
@@ -26,7 +33,7 @@
         </tr>
         <tr id="tr-hash-decoded">
           <th>Hash (Decoded)</th>
-          <td><code id="hash-decoded"></code></td>
+          <td id="td-hash-decoded"><code id="hash-decoded"></code></td>
         </tr>
       </tbody>
     </table>
@@ -42,12 +49,41 @@
     </table>
 
     <script>
+      function tryDecode(fn, s) {
+        let result
+        try {
+          result = fn(s)
+        } catch (e) {
+          result = null
+        }
+        return result
+      }
+
+      function tryDecodeAll(s) {
+        let result
+        if (result = tryDecode(JSON.parse, s)) return result
+        if (result = tryDecode(rison.decode, s)) return result
+        if (result = tryDecode(rison.decode_object, s)) return result
+        if (result = tryDecode(rison.decode_array, s)) return result
+        return null
+      }
+
+      function appendJSONViewerTo(s, e) {
+          const decoded = tryDecodeAll(s)
+          if (decoded != null) {
+            $('<div></div>').addClass('json-viewer').jsonViewer(decoded).appendTo(e)
+          }
+      }
+
       onhashchange = ()=>location.reload()
       $('#query-string').text(location.search === '' ? '(none)' : location.search)
       $('#hash').text(location.hash === '' ? '(none)' : location.hash)
-      $('#hash-decoded').text(decodeURIComponent(location.hash.substr(1)))
+      const hashDecoded = decodeURIComponent(location.hash.substr(1))
+      $('#hash-decoded').text(hashDecoded)
       if (location.hash === '') {
         $('#tr-hash-decoded').hide()
+      } else {
+        appendJSONViewerTo(hashDecoded, '#td-hash-decoded')
       }
 
       const qs = simpleQueryString.parse(location.search)
@@ -57,17 +93,20 @@
       } else {
         qsKeys.sort()
         for (let k of qsKeys) {
+          const v = qs[k]
+          let td
           $('#params').append(
             $('<tr></tr>').append(
               $('<td></td>').append(
                 $('<code></code>').text(k)
               )
             ).append(
-              $('<td></td>').append(
-                $('<code></code>').text(qs[k])
+              td = $('<td></td>').append(
+                $('<code></code>').text(v)
               )
             )
           )
+          appendJSONViewerTo(v, td)
         }
       }
     </script>
