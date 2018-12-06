@@ -15,21 +15,60 @@
       <tbody>
         <tr>
           <th>Query String</th>
-          <td><code id="query_string"></code></td>
+          <td><code id="query-string"></code></td>
+        </tr>
+        <tr>
+          <th>Hash</th>
+          <td><code id="hash"></code></td>
+        </tr>
+        <tr id="tr-hash-decoded">
+          <th>Hash (Decoded)</th>
+          <td><code id="hash-decoded"></code></td>
         </tr>
       </tbody>
     </table>
 
-    <table>
+    <table id="table-query-params">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Value</th>
+          <th>Query Parameter</th>
+          <th>Decoded Value</th>
         </tr>
       </thead>
       <tbody id="params"></tbody>
     </table>
 
-    <script src="app.js"></script>
+    <script>
+      onhashchange = ()=>location.reload()
+      document.getElementById('query-string').textContent = location.search === '' ? '(none)' : location.search
+      document.getElementById('hash').textContent = location.hash === '' ? '(none)' : location.hash
+      document.getElementById('hash-decoded').textContent = decodeURIComponent(location.hash.substr(1))
+      document.getElementById('tr-hash-decoded').hidden = location.hash === ''
+
+      const qs = simpleQueryString.parse(location.search)
+      const qsKeys = Object.keys(qs)
+      if (qsKeys.length === 0) {
+        document.getElementById('table-query-params').hidden = true
+      } else {
+        qsKeys.sort()
+        for (let k of qsKeys) {
+          const tr = document.createElement('tr')
+
+          const td1 = document.createElement('td')
+          tr.appendChild(td1)
+          const code1 = document.createElement('code')
+          code1.textContent = k
+          td1.appendChild(code1)
+
+          const td2 = document.createElement('td')
+          tr.appendChild(td2)
+          const code2 = document.createElement('code')
+          code2.textContent = qs[k]
+          td2.appendChild(code2)
+
+          document.getElementById('params').appendChild(tr)
+        }
+      }
+    </script>
   </body>
 </html>
