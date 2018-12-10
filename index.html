@@ -78,7 +78,7 @@
       onhashchange = ()=>location.reload()
       $('#query-string').text(location.search === '' ? '(none)' : location.search)
       $('#hash').text(location.hash === '' ? '(none)' : location.hash)
-      const hashDecoded = decodeURIComponent(location.hash.substr(1))
+      const hashDecoded = decodeURIComponent(location.hash.substr(1).replace(/\+/g, ' '))
       $('#hash-decoded').text(hashDecoded)
       if (location.hash === '') {
         $('#tr-hash-decoded').hide()
